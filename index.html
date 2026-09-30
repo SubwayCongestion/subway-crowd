@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>지하철 혼잡도 - 1호선</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="phone">
+  <header><h1>지하철 혼잡도</h1><select id="lineSelect" class="lineSelect"></select></header>
+
+  <section class="top">
+    <div class="col">
+      <label>승차역</label>
+      <select id="fromStation"></select>
+      <label>승차 시간</label>
+      <div class="time"><input id="hour" type="number" min="0" max="23" value="7"> 시
+        <input id="minute" type="number" min="0" max="59" value="32"> 분</div>
+    </div>
+    <div class="mid">
+      <div>걸리는 시간</div>
+      <div class="result" id="travel"></div>
+      <div class="arrow">➜</div>
+    </div>
+    <div class="col">
+      <label>하차역</label>
+      <select id="toStation"></select>
+      <label>도착 시간</label>
+      <div class="result" id="arrive"></div>
+    </div>
+  </section>
+  <p id="error" class="error"></p>
+  <p id="lineNote" class="error"></p>
+  <p class="hint">※ 역 사이 이동시간은 역 1개당 <b>2분</b>으로 계산한 예상값입니다.</p>
+  <hr>
+
+  <button class="arrowbtn" onclick="shift(-1)">▲ 이전 시간</button>
+  <section class="lists">
+    <div class="listcol">
+      <div class="head"><span class="name red" id="nameFrom"></span><span class="badge" id="badgeFrom"></span></div>
+      <div id="listFrom"></div>
+    </div>
+    <div class="listcol">
+      <div class="head"><span class="name red" id="nameTo"></span><span class="badge" id="badgeTo"></span></div>
+      <div id="listTo"></div>
+    </div>
+  </section>
+  <button class="arrowbtn" onclick="shift(1)">▼ 이후 시간</button>
+  <button class="reset" onclick="resetShift()">현재 시간으로 돌아가기</button>
+
+  <footer>
+    <span class="dot lv1"></span>여유 <span class="dot lv2"></span>보통
+    <span class="dot lv3"></span>혼잡 <span class="dot lv4"></span>매우혼잡
+    <p>자료: 서울시 지하철 호선별 역별 시간대별 승하차 인원(2026.08, 전체 27개 호선)</p>
+  </footer>
+</div>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
