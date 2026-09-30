@@ -26,22 +26,31 @@ function fillStations() {
   }
   $("fromStation").value = 0;
   $("toStation").value = Math.min(line.n.length - 1, 3);
-  $("lineNote").textContent = line.ok ? "" :
-    "※ 이 노선은 자료에 적힌 역 순서로 이동시간을 계산해서 실제와 다를 수 있어요.";
+  $("lineNote").textContent =
+    line.t === 1 ? "※ 이동시간: 서울교통공사 표준 운행시간 기준 (열차 사정에 따라 달라질 수 있어요)" :
+    line.t === 2 ? "※ 이동시간: 역 사이 거리로 계산한 추정값이에요. (홍대입구·서강대·공덕·효창공원앞·김포공항·계양·검암은 역당 2분으로 가정)" :
+    "※ 이동시간: 역당 2분으로 가정한 값이고, 역 순서도 실제와 다를 수 있어요.";
 }
 
-// ===== 역 사이 정거장 수 (연결된 역을 따라 가장 짧은 길을 찾음) =====
-function countStops(line, a, b) {
+// ===== 역 사이 걸리는 시간 (연결된 역을 따라 가장 빨리 가는 길을 찾음) =====
+// 역 사이 시간이 data.js 에 있으면 그 값을, 없으면 MIN_PER_STOP(2분)을 씁니다.
+function travelMinutes(line, a, b) {
   const n = line.n.length;
   const adj = Array.from({length: n}, () => []);
   const edges = line.e || Array.from({length: n - 1}, (_, i) => [i, i + 1]);
-  for (const [x, y] of edges) { adj[x].push(y); adj[y].push(x); }
-  const dist = Array(n).fill(-1);
+  for (const [x, y, m] of edges) {
+    const w = (m === undefined) ? MIN_PER_STOP : m;
+    adj[x].push([y, w]); adj[y].push([x, w]);
+  }
+  const dist = Array(n).fill(Infinity);
   dist[a] = 0;
-  const q = [a];
-  while (q.length) {
-    const c = q.shift();
-    for (const nx of adj[c]) if (dist[nx] < 0) { dist[nx] = dist[c] + 1; q.push(nx); }
+  const done = Array(n).fill(false);
+  for (let k = 0; k < n; k++) {
+    let c = -1;
+    for (let i = 0; i < n; i++) if (!done[i] && (c < 0 || dist[i] < dist[c])) c = i;
+    if (c < 0 || dist[c] === Infinity) break;
+    done[c] = true;
+    for (const [nx, w] of adj[c]) if (dist[c] + w < dist[nx]) dist[nx] = dist[c] + w;
   }
   return dist[b];
 }
@@ -58,7 +67,7 @@ function update() {
   if (from === to) { err.textContent = "승차역과 하차역이 같아요. 다른 역을 골라주세요."; return; }
   if (isNaN(hh)||isNaN(mm)||hh<0||hh>23||mm<0||mm>59) { err.textContent = "시(0~23)와 분(0~59)을 숫자로 입력해주세요."; return; }
 
-  const travel = countStops(line, from, to) * MIN_PER_STOP;
+  const travel = Math.max(1, Math.round(travelMinutes(line, from, to)));
   const total = hh*60 + mm + travel;
   const arrH = Math.floor(total/60) % 24, arrM = total % 60;
   $("travel").textContent = travel + "분";
